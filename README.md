@@ -4,7 +4,33 @@ Gitignore-style ignore rules for Swift, built for [SSHadow](https://github.com/k
 
 `IgnoreModule` matches paths against rules written in `.gitignore` syntax and combines ignore files across a directory tree. It reads no files itself: you pass in the contents of the ignore files you find.
 
-This package is a work in progress.
+## ⚠️ Pre-1.0
+
+This package is functional, but **breaking changes may occur between minor releases until version 1.0.** Pin to a minor version:
+
+```swift
+.package(url: "https://github.com/kosolabs/swift-ignore.git", .upToNextMinor(from: "0.1.0"))
+```
+
+## Example
+
+```swift
+import IgnoreModule
+
+let root = Ignore(
+  filenames: [".gitignore", ".sshadowignore"],
+  global: ".DS_Store",
+  files: [".gitignore": "build/\n*.log"]
+)
+root.matched("build", isDir: true).isIgnore        // true
+root.matched("notes.txt", isDir: false).isIgnore   // false
+
+let src = root.child("src", files: [".sshadowignore": "!debug.log"])
+src.matched("src/debug.log", isDir: false).isWhitelist  // true: later filenames win
+src.matched("src/error.log", isDir: false).isIgnore     // true
+```
+
+Paths are relative to the root. Don't descend into ignored directories: as in git, a file inside an excluded directory can't be re-included.
 
 ## Attribution
 
