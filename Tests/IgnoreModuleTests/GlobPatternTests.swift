@@ -100,6 +100,7 @@ private let matchCases: [GlobCase] = [
   GlobCase("bracket1", "[]]", "]"),
   GlobCase("bracket2", "[!]]", "a"),
   GlobCase("empty1", "*", ""),
+  GlobCase("starstar6", "***", "a/b"),
 
   // Not from upstream. Git matches bytes and folds ASCII case only.
   GlobCase("unicode1", "?.txt", "\u{E9}.txt"),
@@ -107,6 +108,10 @@ private let matchCases: [GlobCase] = [
   GlobCase("unicode3", "caf\u{E9}", "cafe\u{301}"),
   GlobCase("unicode4", "[\u{E9}]", "e\u{301}"),
   GlobCase("unicode5", "\u{C9}", "\u{E9}", caseInsensitive: true),
+
+  // Not from upstream. Git doesn't fold case for escaped or bracketed letters.
+  GlobCase("casei8", "\\B", "b", caseInsensitive: true),
+  GlobCase("casei9", "[B]", "b", caseInsensitive: true),
 ]
 
 private let nonMatchCases: [GlobCase] = [
