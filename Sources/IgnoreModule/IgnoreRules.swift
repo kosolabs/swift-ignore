@@ -8,13 +8,13 @@ public struct Glob: Sendable, Hashable {
   public let isOnlyDir: Bool
 }
 
-public struct Ignore: Sendable {
+public struct IgnoreRules: Sendable {
   public func matched(_ path: String, isDir: Bool) -> Match<Glob> {
     .none
   }
 }
 
-public struct IgnoreBuilder: Sendable {
+public struct IgnoreRulesBuilder: Sendable {
   public var caseInsensitive = false
   public var allowUnclosedClass = true
 
@@ -34,7 +34,7 @@ public struct IgnoreBuilder: Sendable {
     }
   }
 
-  public func build() throws -> Ignore {
+  public func build() throws -> IgnoreRules {
     throw NotImplemented()
   }
 }

@@ -1,3 +1,5 @@
+// Ported from https://github.com/BurntSushi/ripgrep/blob/020687a77d13146923333f0beb274eeabd54a270/crates/ignore/src/gitignore.rs
+
 import Testing
 
 @testable import IgnoreModule
@@ -130,26 +132,26 @@ private func pending(
   }
 }
 
-private func ignoreFromStr(_ root: String, _ s: String) throws -> Ignore {
-  var builder = IgnoreBuilder(root: root)
+private func rulesFromStr(_ root: String, _ s: String) throws -> IgnoreRules {
+  var builder = IgnoreRulesBuilder(root: root)
   try builder.addStr(from: nil, s)
   return try builder.build()
 }
 
-struct IgnoreTests {
+struct IgnoreRulesTests {
   @Test(arguments: ignoredCases)
   func ignored(_ c: MatchCase) throws {
     try pending(c.name) {
-      let ignore = try ignoreFromStr(c.root, c.gitignore)
-      #expect(ignore.matched(c.path, isDir: c.isDir).isIgnore)
+      let rules = try rulesFromStr(c.root, c.gitignore)
+      #expect(rules.matched(c.path, isDir: c.isDir).isIgnore)
     }
   }
 
   @Test(arguments: notIgnoredCases)
   func notIgnored(_ c: MatchCase) throws {
     try pending(c.name) {
-      let ignore = try ignoreFromStr(c.root, c.gitignore)
-      #expect(!ignore.matched(c.path, isDir: c.isDir).isIgnore)
+      let rules = try rulesFromStr(c.root, c.gitignore)
+      #expect(!rules.matched(c.path, isDir: c.isDir).isIgnore)
     }
   }
 
@@ -189,20 +191,20 @@ struct IgnoreTests {
   // See: https://github.com/BurntSushi/ripgrep/issues/106
   @Test func regression106() throws {
     try pending("regression106") {
-      _ = try ignoreFromStr("/", " ")
+      _ = try rulesFromStr("/", " ")
     }
   }
 
   @Test func caseInsensitive() throws {
     try pending("caseInsensitive") {
-      var builder = IgnoreBuilder(root: root)
+      var builder = IgnoreRulesBuilder(root: root)
       builder.caseInsensitive = true
       try builder.addStr(from: nil, "*.html")
-      let ignore = try builder.build()
-      #expect(ignore.matched("foo.html", isDir: false).isIgnore)
-      #expect(ignore.matched("foo.HTML", isDir: false).isIgnore)
-      #expect(!ignore.matched("foo.htm", isDir: false).isIgnore)
-      #expect(!ignore.matched("foo.HTM", isDir: false).isIgnore)
+      let rules = try builder.build()
+      #expect(rules.matched("foo.html", isDir: false).isIgnore)
+      #expect(rules.matched("foo.HTML", isDir: false).isIgnore)
+      #expect(!rules.matched("foo.htm", isDir: false).isIgnore)
+      #expect(!rules.matched("foo.HTM", isDir: false).isIgnore)
     }
   }
 }
