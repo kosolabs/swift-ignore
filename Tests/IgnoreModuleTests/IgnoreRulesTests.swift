@@ -111,47 +111,37 @@ private func rulesFromStr(_ root: String, _ s: String) -> IgnoreRules {
 struct IgnoreRulesTests {
   @Test(arguments: ignoredCases)
   func ignored(_ c: MatchCase) {
-    pending(c.name) {
-      let rules = rulesFromStr(c.root, c.gitignore)
-      #expect(rules.matched(c.path, isDir: c.isDir).isIgnore)
-    }
+    let rules = rulesFromStr(c.root, c.gitignore)
+    #expect(rules.matched(c.path, isDir: c.isDir).isIgnore)
   }
 
   @Test(arguments: notIgnoredCases)
   func notIgnored(_ c: MatchCase) {
-    pending(c.name) {
-      let rules = rulesFromStr(c.root, c.gitignore)
-      #expect(!rules.matched(c.path, isDir: c.isDir).isIgnore)
-    }
+    let rules = rulesFromStr(c.root, c.gitignore)
+    #expect(!rules.matched(c.path, isDir: c.isDir).isIgnore)
   }
 
   // See: https://github.com/BurntSushi/ripgrep/issues/106
   @Test func regression106() {
-    pending("regression106") {
-      _ = rulesFromStr("/", " ")
-    }
+    _ = rulesFromStr("/", " ")
   }
 
   @Test func caseInsensitive() {
-    pending("caseInsensitive") {
-      var builder = IgnoreRulesBuilder(root: root)
-      builder.caseInsensitive = true
-      builder.addStr(from: nil, "*.html")
-      let rules = builder.build()
-      #expect(rules.matched("foo.html", isDir: false).isIgnore)
-      #expect(rules.matched("foo.HTML", isDir: false).isIgnore)
-      #expect(!rules.matched("foo.htm", isDir: false).isIgnore)
-      #expect(!rules.matched("foo.HTM", isDir: false).isIgnore)
-    }
+    var builder = IgnoreRulesBuilder(root: root)
+    builder.caseInsensitive = true
+    builder.addStr(from: nil, "*.html")
+    let rules = builder.build()
+    #expect(rules.matched("foo.html", isDir: false).isIgnore)
+    #expect(rules.matched("foo.HTML", isDir: false).isIgnore)
+    #expect(!rules.matched("foo.htm", isDir: false).isIgnore)
+    #expect(!rules.matched("foo.HTM", isDir: false).isIgnore)
   }
 
   // Not from upstream: braces are literal, as in git.
   @Test func bracesAreLiteral() {
-    pending("bracesAreLiteral") {
-      let rules = rulesFromStr(root, "{a,b}")
-      #expect(rules.matched("{a,b}", isDir: false).isIgnore)
-      #expect(!rules.matched("a", isDir: false).isIgnore)
-    }
+    let rules = rulesFromStr(root, "{a,b}")
+    #expect(rules.matched("{a,b}", isDir: false).isIgnore)
+    #expect(!rules.matched("a", isDir: false).isIgnore)
   }
 
   // Not from upstream.
