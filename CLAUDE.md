@@ -61,8 +61,7 @@ The code is MIT-licensed. Keep `LICENSE-ripgrep`, and keep the "Ported from" or 
 - The case tables in `IgnoreRulesTests.swift` match upstream exactly. Don't edit them. If a ported test conflicts with git's behavior, stop and flag it instead of changing it.
 - Mark tests that aren't from upstream with a `// Not from upstream` comment.
 - Prefer unit tests. Tests that run `git` are fine as a check against git's behavior.
-
-`Tests/IgnoreModuleTests/Pending.swift` lists tests that are expected to fail until the port is complete. Each listed test runs inside `withKnownIssue`, so it passes while failing. A pending test that starts passing fails with "Known issue was not recorded". When that happens, remove its name. Only remove names: never add a name to make a failing test pass.
+- Mark a test that deliberately differs from git or ripgrep with a comment saying which, and why.
 
 ## Conventions
 

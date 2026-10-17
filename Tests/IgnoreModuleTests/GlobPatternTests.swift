@@ -204,15 +204,11 @@ private let nonMatchCases: [GlobCase] = [
 struct GlobPatternTests {
   @Test(arguments: matchCases)
   func matches(_ c: GlobCase) {
-    pending(c.name) {
-      #expect(GlobPattern(c.pattern, caseInsensitive: c.caseInsensitive).matches(c.path))
-    }
+    #expect(GlobPattern(c.pattern, caseInsensitive: c.caseInsensitive).matches(c.path))
   }
 
   @Test(arguments: nonMatchCases)
   func doesNotMatch(_ c: GlobCase) {
-    pending(c.name) {
-      #expect(!GlobPattern(c.pattern, caseInsensitive: c.caseInsensitive).matches(c.path))
-    }
+    #expect(!GlobPattern(c.pattern, caseInsensitive: c.caseInsensitive).matches(c.path))
   }
 }

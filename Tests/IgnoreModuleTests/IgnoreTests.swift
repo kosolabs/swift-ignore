@@ -7,120 +7,106 @@ import Testing
 
 struct IgnoreTests {
   @Test func explicitIgnore() {
-    pending("explicitIgnore") {
-      let ignore = Ignore(filenames: [], global: "foo\n!bar")
-      #expect(ignore.matched("foo", isDir: false).isIgnore)
-      #expect(ignore.matched("bar", isDir: false).isWhitelist)
-      #expect(ignore.matched("baz", isDir: false).isNone)
-    }
+    let ignore = Ignore(filenames: [], global: "foo\n!bar")
+    #expect(ignore.matched("foo", isDir: false).isIgnore)
+    #expect(ignore.matched("bar", isDir: false).isWhitelist)
+    #expect(ignore.matched("baz", isDir: false).isNone)
   }
 
   @Test func customIgnore() {
-    pending("customIgnore") {
-      let ignore = Ignore(filenames: [".customignore"], files: [".customignore": "foo\n!bar"])
-      #expect(ignore.matched("foo", isDir: false).isIgnore)
-      #expect(ignore.matched("bar", isDir: false).isWhitelist)
-      #expect(ignore.matched("baz", isDir: false).isNone)
-    }
+    let ignore = Ignore(filenames: [".customignore"], files: [".customignore": "foo\n!bar"])
+    #expect(ignore.matched("foo", isDir: false).isIgnore)
+    #expect(ignore.matched("bar", isDir: false).isWhitelist)
+    #expect(ignore.matched("baz", isDir: false).isNone)
   }
 
   // Later filenames take precedence over earlier ones.
   @Test func customIgnorePrecedence() {
-    pending("customIgnorePrecedence") {
-      let ignore = Ignore(
-        filenames: [".customignore1", ".customignore2"],
-        files: [".customignore1": "foo", ".customignore2": "!foo"]
-      )
-      #expect(ignore.matched("foo", isDir: false).isWhitelist)
-    }
+    let ignore = Ignore(
+      filenames: [".customignore1", ".customignore2"],
+      files: [".customignore1": "foo", ".customignore2": "!foo"]
+    )
+    #expect(ignore.matched("foo", isDir: false).isWhitelist)
   }
 
   // Adapted from exclude_lowest: global rules take the place of
   // .git/info/exclude as the lowest precedence.
   @Test func globalLowest() {
-    pending("globalLowest") {
-      let ignore = Ignore(
-        filenames: [".gitignore", ".customignore"],
-        global: "foo\nbar\nbaz",
-        files: [".gitignore": "!foo", ".customignore": "!bar"]
-      )
-      #expect(ignore.matched("baz", isDir: false).isIgnore)
-      #expect(ignore.matched("foo", isDir: false).isWhitelist)
-      #expect(ignore.matched("bar", isDir: false).isWhitelist)
-    }
+    let ignore = Ignore(
+      filenames: [".gitignore", ".customignore"],
+      global: "foo\nbar\nbaz",
+      files: [".gitignore": "!foo", ".customignore": "!bar"]
+    )
+    #expect(ignore.matched("baz", isDir: false).isIgnore)
+    #expect(ignore.matched("foo", isDir: false).isWhitelist)
+    #expect(ignore.matched("bar", isDir: false).isWhitelist)
   }
 
   @Test func notPresent() {
-    pending("notPresent") {
-      let ignore = Ignore(filenames: [".gitignore"])
-      #expect(ignore.matched("foo", isDir: false).isNone)
-    }
+    let ignore = Ignore(filenames: [".gitignore"])
+    #expect(ignore.matched("foo", isDir: false).isNone)
   }
 
   // Adapted from stops_at_git_dir, without the .git barrier.
   @Test func parentRulesApplyInChild() {
-    pending("parentRulesApplyInChild") {
-      let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "bar"])
-      let foo = root.child("foo", files: [:])
-      #expect(root.matched("bar", isDir: false).isIgnore)
-      #expect(foo.matched("foo/bar", isDir: false).isIgnore)
-    }
+    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "bar"])
+    let foo = root.child("foo", files: [:])
+    #expect(root.matched("bar", isDir: false).isIgnore)
+    #expect(foo.matched("foo/bar", isDir: false).isIgnore)
   }
 
   // Adapted from absolute_parent_anchored.
   @Test func anchoredToOwnDirectory() {
-    pending("anchoredToOwnDirectory") {
-      let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/llvm/\nfoo"])
-      let src = root.child("src", files: [:])
-      #expect(root.matched("llvm", isDir: true).isIgnore)
-      #expect(src.matched("src/llvm", isDir: true).isNone)
-      #expect(src.matched("src/foo", isDir: false).isIgnore)
-    }
+    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/llvm/\nfoo"])
+    let src = root.child("src", files: [:])
+    #expect(root.matched("llvm", isDir: true).isIgnore)
+    #expect(src.matched("src/llvm", isDir: true).isNone)
+    #expect(src.matched("src/foo", isDir: false).isIgnore)
   }
 
   // Not from upstream.
   @Test func nearestDirectoryWins() {
-    pending("nearestDirectoryWins") {
-      let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "*.log"])
-      let src = root.child("src", files: [".gitignore": "!keep.log"])
-      #expect(src.matched("src/keep.log", isDir: false).isWhitelist)
-      #expect(src.matched("src/other.log", isDir: false).isIgnore)
-    }
+    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "*.log"])
+    let src = root.child("src", files: [".gitignore": "!keep.log"])
+    #expect(src.matched("src/keep.log", isDir: false).isWhitelist)
+    #expect(src.matched("src/other.log", isDir: false).isIgnore)
+  }
+
+  // Not from upstream.
+  @Test func laterFilenameBeatsNearerDirectory() {
+    let root = Ignore(
+      filenames: [".gitignore", ".sshadowignore"],
+      files: [".sshadowignore": "!.env"]
+    )
+    let src = root.child("src", files: [".gitignore": ".env"])
+    #expect(src.matched("src/.env", isDir: false).isWhitelist)
   }
 
   @Test func walkNoIgnores() {
-    pending("walkNoIgnores") {
-      let tree = ["a/b/c/": "", "x/y/": "", "a/b/foo": "", "x/y/foo": ""]
-      #expect(
-        walk(tree, filenames: [])
-          == ["a", "a/b", "a/b/c", "a/b/foo", "x", "x/y", "x/y/foo"]
-      )
-    }
+    let tree = ["a/b/c/": "", "x/y/": "", "a/b/foo": "", "x/y/foo": ""]
+    #expect(
+      walk(tree, filenames: [])
+        == ["a", "a/b", "a/b/c", "a/b/foo", "x", "x/y", "x/y/foo"]
+    )
   }
 
   @Test func walkCustomIgnore() {
-    pending("walkCustomIgnore") {
-      let tree = [".customignore": "foo", "foo": "", "a/foo": "", "bar": "", "a/bar": ""]
-      #expect(
-        walk(tree, filenames: [".customignore"]) == [".customignore", "a", "a/bar", "bar"]
-      )
-    }
+    let tree = [".customignore": "foo", "foo": "", "a/foo": "", "bar": "", "a/bar": ""]
+    #expect(
+      walk(tree, filenames: [".customignore"]) == [".customignore", "a", "a/bar", "bar"]
+    )
   }
 
   @Test func walkExplicitIgnore() {
-    pending("walkExplicitIgnore") {
-      let tree = ["foo": "", "a/foo": "", "bar": "", "a/bar": ""]
-      #expect(walk(tree, filenames: [], global: "foo") == ["a", "a/bar", "bar"])
-    }
+    let tree = ["foo": "", "a/foo": "", "bar": "", "a/bar": ""]
+    #expect(walk(tree, filenames: [], global: "foo") == ["a", "a/bar", "bar"])
   }
 
   // Not from upstream: as in git, a file can't be re-included when its
   // parent directory is excluded.
   @Test func walkExcludedDirectoryNotReentered() {
-    pending("walkExcludedDirectoryNotReentered") {
-      let tree = [".gitignore": "build/\n!build/keep", "build/keep": "", "build/x": "", "src/a": ""]
-      #expect(walk(tree, filenames: [".gitignore"]) == [".gitignore", "src", "src/a"])
-    }
+    let tree = [".gitignore": "build/\n!build/keep", "build/keep": "", "build/x": "", "src/a": ""]
+    #expect(walk(tree, filenames: [".gitignore"]) == [".gitignore", "src", "src/a"])
   }
 }
 
