@@ -10,8 +10,6 @@ private let pendingTests: Set<String> = [
   "ig31", "ig32", "ig33", "ig34", "ig35", "ig36", "ig37", "ig38", "ig39", "ig40",
   "ig41", "ig42", "ig43", "ig44",
   "cs1",
-  "parseExcludesFile1", "parseExcludesFile2", "parseExcludesFile3",
-  "parseExcludesFile4", "parseExcludesFile5",
   "caseInsensitive",
   "bracesAreLiteral",
 

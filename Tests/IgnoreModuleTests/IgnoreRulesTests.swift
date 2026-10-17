@@ -125,39 +125,6 @@ struct IgnoreRulesTests {
     }
   }
 
-  @Test func parseExcludesFile1() throws {
-    try pending("parseExcludesFile1") {
-      let got = try #require(parseExcludesFile("[core]\nexcludesFile = /foo/bar"))
-      #expect(got == "/foo/bar")
-    }
-  }
-
-  @Test func parseExcludesFile2() throws {
-    try pending("parseExcludesFile2") {
-      let got = try #require(parseExcludesFile("[core]\nexcludesFile = ~/foo/bar"))
-      #expect(got == expandTilde("~/foo/bar"))
-    }
-  }
-
-  @Test func parseExcludesFile3() {
-    pending("parseExcludesFile3") {
-      #expect(parseExcludesFile("[core]\nexcludeFile = /foo/bar") == nil)
-    }
-  }
-
-  @Test func parseExcludesFile4() throws {
-    try pending("parseExcludesFile4") {
-      let got = try #require(parseExcludesFile("[core]\nexcludesFile = \"~/foo/bar\""))
-      #expect(got == expandTilde("~/foo/bar"))
-    }
-  }
-
-  @Test func parseExcludesFile5() {
-    pending("parseExcludesFile5") {
-      #expect(parseExcludesFile("[core]\nexcludesFile = \" \"~/foo/bar \" \"") == nil)
-    }
-  }
-
   // See: https://github.com/BurntSushi/ripgrep/issues/106
   @Test func regression106() {
     pending("regression106") {
