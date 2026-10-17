@@ -19,23 +19,6 @@ private let pendingTests: Set<String> = [
   "nearestDirectoryWins",
   "walkCustomIgnore", "walkExplicitIgnore",
   "walkExcludedDirectoryNotReentered",
-
-  // GlobPatternTests
-  "match1", "match2", "match3", "match4", "match5", "match6", "match7",
-  "match8", "match9", "match10", "matchrec1", "matchrec2", "matchrec3",
-  "matchrec4", "matchrec5", "matchrec6", "matchrec7", "matchrec8", "matchrec9",
-  "matchrec10", "matchrec11", "matchrec12", "matchrec13", "matchrec14",
-  "matchrec15", "matchrec16", "matchrec17", "matchrec18", "matchrec19",
-  "matchrec20", "matchrec21", "matchrec22", "matchrec23", "matchrec24",
-  "matchrec25", "matchrec26", "matchrange1", "matchrange2", "matchrange3",
-  "matchrange4", "matchrange5", "matchrange6", "matchrange7", "matchrange8",
-  "matchrange9", "matchrange10", "matchrange11", "matchrange12", "matchpat1",
-  "matchpat2", "matchpat4", "matchpat6", "matchescape", "matchcasei1",
-  "matchcasei2", "matchcasei3", "matchcasei4", "matchalt1", "matchalt2",
-  "matchslash1", "matchbackslash1", "matchbackslash2", "matchbackslash3",
-  "matchbackslash7", "posix1", "posix3", "posix4", "starstar1",
-  "starstar4", "casei6", "casei7", "bracket1", "bracket2", "empty1",
-  "unicode1", "unicode2", "unicode3", "unicode4", "unicode5",
 ]
 
 func pending(
