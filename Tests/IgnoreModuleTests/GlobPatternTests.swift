@@ -1,6 +1,7 @@
 // Adapted from the matches!/nmatches! tests in
 // https://github.com/BurntSushi/ripgrep/blob/020687a77d13146923333f0beb274eeabd54a270/crates/globset/src/glob.rs
-// Expected results come from git's wildmatch with WM_PATHNAME, not globset.
+// Expected results come from git's wildmatch with WM_PATHNAME, not globset,
+// except where noted.
 
 import Testing
 
@@ -89,7 +90,6 @@ private let matchCases: [GlobCase] = [
   GlobCase("matchbackslash7", "\\a", "a"),
 
   // Not from upstream.
-  GlobCase("bytes2", "??.txt", "é.txt"),
   GlobCase("posix1", "[[:digit:]]", "5"),
   GlobCase("posix3", "[[:alpha:][:digit:]]", "x"),
   GlobCase("posix4", "[![:digit:]]", "x"),
@@ -100,6 +100,13 @@ private let matchCases: [GlobCase] = [
   GlobCase("bracket1", "[]]", "]"),
   GlobCase("bracket2", "[!]]", "a"),
   GlobCase("empty1", "*", ""),
+
+  // Not from upstream. Git matches bytes and folds ASCII case only.
+  GlobCase("unicode1", "?.txt", "\u{E9}.txt"),
+  GlobCase("unicode2", "?", "e\u{301}"),
+  GlobCase("unicode3", "caf\u{E9}", "cafe\u{301}"),
+  GlobCase("unicode4", "[\u{E9}]", "e\u{301}"),
+  GlobCase("unicode5", "\u{C9}", "\u{E9}", caseInsensitive: true),
 ]
 
 private let nonMatchCases: [GlobCase] = [
@@ -168,7 +175,6 @@ private let nonMatchCases: [GlobCase] = [
   GlobCase("matchslash4", "abc[/]def", "abc/def"),
 
   // Not from upstream.
-  GlobCase("bytes1", "?.txt", "é.txt"),
   GlobCase("unclosed1", "[", "["),
   GlobCase("unclosed2", "a[", "a["),
   GlobCase("unclosed3", "[a", "[a"),
@@ -177,7 +183,6 @@ private let nonMatchCases: [GlobCase] = [
   GlobCase("starstar2", "a**", "a/b"),
   GlobCase("starstar3", "**a", "x/a"),
   GlobCase("starstar5", "a/**b", "a/x/b"),
-  GlobCase("casei5", "É", "é", caseInsensitive: true),
   GlobCase("trailingbackslash1", "abc\\", "abc\\"),
   GlobCase("trailingbackslash2", "abc\\", "abc"),
   GlobCase("bracket3", "[!]]", "]"),
@@ -185,6 +190,10 @@ private let nonMatchCases: [GlobCase] = [
   GlobCase("slash2", "a?b", "a/b"),
   GlobCase("slash3", "[a-c]", "/"),
   GlobCase("slash4", "[!a]", "/"),
+
+  // Not from upstream. Git matches bytes.
+  GlobCase("unicode6", "??.txt", "\u{E9}.txt"),
+  GlobCase("unicode7", "[a-z]", "\u{E9}"),
 ]
 
 struct GlobPatternTests {

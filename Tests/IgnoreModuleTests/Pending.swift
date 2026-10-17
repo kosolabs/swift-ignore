@@ -33,8 +33,9 @@ private let pendingTests: Set<String> = [
   "matchpat2", "matchpat4", "matchpat6", "matchescape", "matchcasei1",
   "matchcasei2", "matchcasei3", "matchcasei4", "matchalt1", "matchalt2",
   "matchslash1", "matchbackslash1", "matchbackslash2", "matchbackslash3",
-  "matchbackslash7", "bytes2", "posix1", "posix3", "posix4", "starstar1",
+  "matchbackslash7", "posix1", "posix3", "posix4", "starstar1",
   "starstar4", "casei6", "casei7", "bracket1", "bracket2", "empty1",
+  "unicode1", "unicode2", "unicode3", "unicode4", "unicode5",
 ]
 
 func pending(

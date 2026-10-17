@@ -4,7 +4,7 @@ A Swift port of ripgrep's `ignore` crate, built for SSHadow's `.sshadowignore` f
 
 ## Goal
 
-Behave the way someone who knows `.gitignore` expects. Prefer simple over 100% correct. Ripgrep compatibility is not a goal: where ripgrep and git disagree, follow git.
+Behave the way someone who knows `.gitignore` expects. Prefer simple over 100% correct. Ripgrep compatibility is not a goal: where ripgrep and git disagree, follow git. Where git's behavior would surprise a user, prefer the unsurprising behavior, and cover the difference with a test marked as differing from git.
 
 Check git's behavior with `git check-ignore --no-index -v` in a scratch repo, and see `man gitignore`. `check-ignore` also reports a path when one of its parent directories matches, so it can't answer glob-level questions. For those, git's `wildmatch()` with `WM_PATHNAME` is the reference.
 
@@ -22,8 +22,8 @@ Out of scope, on purpose:
 Matching semantics:
 
 - Braces are literal: `{a,b}` matches a file named `{a,b}`.
-- Match on UTF-8 bytes, not `Character`s. Git compares bytes, and Swift `String` equality treats NFC and NFD forms as equal.
-- Case-insensitive matching folds ASCII only, as git does.
+- Match on `Character`s. `?` and `[...]` match one user-perceived character, and NFC and NFD forms compare equal. Git matches bytes.
+- Case-insensitive matching folds Unicode case. Git folds ASCII only.
 - `*`, `?` and `[...]` never match `/`. A `**` that isn't between slashes (or at the start or end) acts like `*`.
 - An unclosed `[`, an unknown POSIX class or a trailing backslash makes the pattern never match.
 - POSIX classes like `[[:digit:]]` are supported.
