@@ -5,17 +5,17 @@ let package = Package(
   name: "swift-ignore",
   products: [
     .library(
-      name: "Ignore",
-      targets: ["Ignore"]
+      name: "IgnoreModule",
+      targets: ["IgnoreModule"]
     )
   ],
   targets: [
     .target(
-      name: "Ignore",
+      name: "IgnoreModule",
     ),
     .testTarget(
-      name: "IgnoreTests",
-      dependencies: ["Ignore"]
+      name: "IgnoreModuleTests",
+      dependencies: ["IgnoreModule"]
     ),
   ]
 )
