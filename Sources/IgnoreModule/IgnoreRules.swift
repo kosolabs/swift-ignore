@@ -1,5 +1,3 @@
-struct NotImplemented: Error {}
-
 public struct Glob: Sendable, Hashable {
   public let from: String?
   public let original: String
@@ -16,7 +14,6 @@ public struct IgnoreRules: Sendable {
 
 public struct IgnoreRulesBuilder: Sendable {
   public var caseInsensitive = false
-  public var allowUnclosedClass = true
 
   private let root: String
 
@@ -24,18 +21,17 @@ public struct IgnoreRulesBuilder: Sendable {
     self.root = root
   }
 
-  public mutating func addLine(from: String?, _ line: String) throws {
-    throw NotImplemented()
+  public mutating func addLine(from: String?, _ line: String) {
   }
 
-  mutating func addStr(from: String?, _ gitignore: String) throws {
+  mutating func addStr(from: String?, _ gitignore: String) {
     for line in gitignore.split(whereSeparator: \.isNewline) {
-      try addLine(from: from, String(line))
+      addLine(from: from, String(line))
     }
   }
 
-  public func build() throws -> IgnoreRules {
-    throw NotImplemented()
+  public func build() -> IgnoreRules {
+    IgnoreRules()
   }
 }
 

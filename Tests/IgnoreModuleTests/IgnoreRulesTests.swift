@@ -102,55 +102,25 @@ private let notIgnoredCases: [MatchCase] = [
   MatchCase("cs4", root, "*.html", "foo.HTM"),
 ]
 
-// Tests expected to fail until the port is complete. Remove a name once its
-// test passes; a pending test that passes is reported as a failure.
-private let pendingTests: Set<String> = [
-  "ig1", "ig2", "ig3", "ig4", "ig5", "ig6", "ig7", "ig8", "ig9", "ig10",
-  "ig11", "ig12", "ig13", "ig14", "ig15", "ig16", "ig17", "ig18", "ig19", "ig20",
-  "ig21", "ig22", "ig23", "ig24", "ig25", "ig26", "ig27", "ig28", "ig29", "ig30",
-  "ig31", "ig32", "ig33", "ig34", "ig35", "ig36", "ig37", "ig38", "ig39", "ig40",
-  "ig41", "ig42", "ig43", "ig44",
-  "ignot1", "ignot2", "ignot3", "ignot4", "ignot5", "ignot6", "ignot7", "ignot8",
-  "ignot9", "ignot10", "ignot11", "ignot12", "ignot13", "ignot14", "ignot15",
-  "ignot16", "ignot17", "ignot18", "ignot19",
-  "cs1", "cs2", "cs3", "cs4",
-  "parseExcludesFile1", "parseExcludesFile2", "parseExcludesFile3",
-  "parseExcludesFile4", "parseExcludesFile5",
-  "regression106",
-  "caseInsensitive",
-]
-
-private func pending(
-  _ name: String,
-  sourceLocation: SourceLocation = #_sourceLocation,
-  _ body: () throws -> Void
-) rethrows {
-  try withKnownIssue("Not implemented yet", sourceLocation: sourceLocation) {
-    try body()
-  } when: {
-    pendingTests.contains(name)
-  }
-}
-
-private func rulesFromStr(_ root: String, _ s: String) throws -> IgnoreRules {
+private func rulesFromStr(_ root: String, _ s: String) -> IgnoreRules {
   var builder = IgnoreRulesBuilder(root: root)
-  try builder.addStr(from: nil, s)
-  return try builder.build()
+  builder.addStr(from: nil, s)
+  return builder.build()
 }
 
 struct IgnoreRulesTests {
   @Test(arguments: ignoredCases)
-  func ignored(_ c: MatchCase) throws {
-    try pending(c.name) {
-      let rules = try rulesFromStr(c.root, c.gitignore)
+  func ignored(_ c: MatchCase) {
+    pending(c.name) {
+      let rules = rulesFromStr(c.root, c.gitignore)
       #expect(rules.matched(c.path, isDir: c.isDir).isIgnore)
     }
   }
 
   @Test(arguments: notIgnoredCases)
-  func notIgnored(_ c: MatchCase) throws {
-    try pending(c.name) {
-      let rules = try rulesFromStr(c.root, c.gitignore)
+  func notIgnored(_ c: MatchCase) {
+    pending(c.name) {
+      let rules = rulesFromStr(c.root, c.gitignore)
       #expect(!rules.matched(c.path, isDir: c.isDir).isIgnore)
     }
   }
@@ -189,22 +159,31 @@ struct IgnoreRulesTests {
   }
 
   // See: https://github.com/BurntSushi/ripgrep/issues/106
-  @Test func regression106() throws {
-    try pending("regression106") {
-      _ = try rulesFromStr("/", " ")
+  @Test func regression106() {
+    pending("regression106") {
+      _ = rulesFromStr("/", " ")
     }
   }
 
-  @Test func caseInsensitive() throws {
-    try pending("caseInsensitive") {
+  @Test func caseInsensitive() {
+    pending("caseInsensitive") {
       var builder = IgnoreRulesBuilder(root: root)
       builder.caseInsensitive = true
-      try builder.addStr(from: nil, "*.html")
-      let rules = try builder.build()
+      builder.addStr(from: nil, "*.html")
+      let rules = builder.build()
       #expect(rules.matched("foo.html", isDir: false).isIgnore)
       #expect(rules.matched("foo.HTML", isDir: false).isIgnore)
       #expect(!rules.matched("foo.htm", isDir: false).isIgnore)
       #expect(!rules.matched("foo.HTM", isDir: false).isIgnore)
+    }
+  }
+
+  // Not from upstream: braces are literal, as in git.
+  @Test func bracesAreLiteral() {
+    pending("bracesAreLiteral") {
+      let rules = rulesFromStr(root, "{a,b}")
+      #expect(rules.matched("{a,b}", isDir: false).isIgnore)
+      #expect(!rules.matched("a", isDir: false).isIgnore)
     }
   }
 }
