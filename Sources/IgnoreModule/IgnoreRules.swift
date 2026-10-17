@@ -34,11 +34,3 @@ public struct IgnoreRulesBuilder: Sendable {
     IgnoreRules()
   }
 }
-
-func parseExcludesFile(_ data: String) -> String? {
-  ""
-}
-
-func expandTilde(_ path: String) -> String {
-  path
-}
