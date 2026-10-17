@@ -153,4 +153,29 @@ struct IgnoreRulesTests {
       #expect(!rules.matched("a", isDir: false).isIgnore)
     }
   }
+
+  // Not from upstream.
+  @Test func byteOrderMarkIsSkipped() {
+    let rules = rulesFromStr(root, "\u{FEFF}foo")
+    #expect(rules.matched("foo", isDir: false).isIgnore)
+  }
+
+  // Not from upstream. Git only trims trailing spaces.
+  @Test func trailingTabIsTrimmed() {
+    let rules = rulesFromStr(root, "foo\t")
+    #expect(rules.matched("foo", isDir: false).isIgnore)
+  }
+
+  // Not from upstream. Ripgrep treats `foo\/` as `foo/`; git never matches it.
+  @Test func escapedTrailingSlashNeverMatches() {
+    let rules = rulesFromStr(root, "foo\\/")
+    #expect(!rules.matched("foo", isDir: true).isIgnore)
+  }
+
+  // Not from upstream. Ripgrep strips the root as a string prefix.
+  @Test func rootIsStrippedByComponent() {
+    let rules = rulesFromStr("src", "/x/foo")
+    #expect(rules.matched("src/x/foo", isDir: false).isIgnore)
+    #expect(!rules.matched("srcx/foo", isDir: false).isIgnore)
+  }
 }
