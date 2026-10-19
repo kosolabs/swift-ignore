@@ -8,7 +8,7 @@ public struct Glob: Sendable, Hashable {
   public let isOnlyDir: Bool
 }
 
-public struct IgnoreRules: Sendable {
+struct IgnoreRules: Sendable {
   private let root: String
   private let globs: [(glob: Glob, pattern: GlobPattern)]
 
@@ -17,7 +17,7 @@ public struct IgnoreRules: Sendable {
     self.globs = globs
   }
 
-  public func matched(_ path: String, isDir: Bool) -> Match<Glob> {
+  func matched(_ path: String, isDir: Bool) -> Match<Glob> {
     let path = String(strip(path))
     for (glob, pattern) in globs.reversed() where !glob.isOnlyDir || isDir {
       if pattern.matches(path) {
@@ -41,17 +41,17 @@ public struct IgnoreRules: Sendable {
   }
 }
 
-public struct IgnoreRulesBuilder: Sendable {
-  public var caseInsensitive = false
+struct IgnoreRulesBuilder: Sendable {
+  var caseInsensitive = false
 
   private let root: String
   private var globs: [(glob: Glob, pattern: GlobPattern)] = []
 
-  public init(root: String) {
+  init(root: String) {
     self.root = root.hasPrefix("./") ? String(root.dropFirst(2)) : root
   }
 
-  public mutating func addLine(from: String?, _ line: String) {
+  mutating func addLine(from: String?, _ line: String) {
     if line.hasPrefix("#") { return }
     var line = Self.trimTrailingWhitespace(Substring(line))
     if line.isEmpty { return }
@@ -96,7 +96,7 @@ public struct IgnoreRulesBuilder: Sendable {
     }
   }
 
-  public func build() -> IgnoreRules {
+  func build() -> IgnoreRules {
     IgnoreRules(root: root, globs: globs)
   }
 

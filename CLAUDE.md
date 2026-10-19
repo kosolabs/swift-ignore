@@ -31,10 +31,11 @@ Matching semantics:
 API:
 
 - The module is `IgnoreModule`, so the `Ignore` type doesn't shadow it.
-- `IgnoreRules`, built with `IgnoreRulesBuilder`, holds the rules from one ignore file. It's ripgrep's `Gitignore`.
+- The public API is `Ignore`, `Match` and `Glob`.
+- `IgnoreRules`, built with `IgnoreRulesBuilder`, holds the rules from one ignore file. It's ripgrep's `Gitignore`, and it's internal.
 - `Ignore` combines ignore files across a directory tree. It's ripgrep's `dir::Ignore`. `Ignore(filenames:global:files:)` is the root, and `child(_:files:)` descends one directory.
 - `Match<T>` (`.none`, `.ignore`, `.whitelist`) and `Glob` report which rule matched.
-- Paths are `/`-separated `String`s, relative to the root of the `Ignore` stack.
+- `Ignore.matched(_:isDir:)` takes the name of an entry in that `Ignore`'s directory. Internally, paths are `/`-separated `String`s, relative to the root of the `Ignore` stack.
 - Precedence:
   - Later entries in `filenames` beat earlier ones.
   - Within one filename, the nearest directory wins.

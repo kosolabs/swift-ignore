@@ -26,11 +26,11 @@ root.matched("build", isDir: true).isIgnore        // true
 root.matched("notes.txt", isDir: false).isIgnore   // false
 
 let src = root.child("src", files: [".sshadowignore": "!debug.log"])
-src.matched("src/debug.log", isDir: false).isWhitelist  // true: later filenames win
-src.matched("src/error.log", isDir: false).isIgnore     // true
+src.matched("debug.log", isDir: false).isWhitelist  // true: later filenames win
+src.matched("error.log", isDir: false).isIgnore     // true
 ```
 
-Paths are relative to the root. Don't descend into ignored directories: as in git, a file inside an excluded directory can't be re-included.
+`matched` takes the name of an entry in that `Ignore`'s directory. Don't descend into ignored directories: as in git, a file inside an excluded directory can't be re-included.
 
 ## Attribution
 
