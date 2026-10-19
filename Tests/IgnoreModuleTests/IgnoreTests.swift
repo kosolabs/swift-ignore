@@ -52,7 +52,7 @@ struct IgnoreTests {
     let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "bar"])
     let foo = root.child("foo", files: [:])
     #expect(root.matched("bar", isDir: false).isIgnore)
-    #expect(foo.matched("foo/bar", isDir: false).isIgnore)
+    #expect(foo.matched("bar", isDir: false).isIgnore)
   }
 
   // Adapted from absolute_parent_anchored.
@@ -60,16 +60,25 @@ struct IgnoreTests {
     let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/llvm/\nfoo"])
     let src = root.child("src", files: [:])
     #expect(root.matched("llvm", isDir: true).isIgnore)
-    #expect(src.matched("src/llvm", isDir: true).isNone)
-    #expect(src.matched("src/foo", isDir: false).isIgnore)
+    #expect(src.matched("llvm", isDir: true).isNone)
+    #expect(src.matched("foo", isDir: false).isIgnore)
+  }
+
+  // Not from upstream.
+  @Test func namesAreRelativeToTheirDirectory() {
+    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/a.txt\nsrc/lib/b.txt"])
+    let lib = root.child("src", files: [:]).child("lib", files: [:])
+    #expect(root.matched("a.txt", isDir: false).isIgnore)
+    #expect(lib.matched("a.txt", isDir: false).isNone)
+    #expect(lib.matched("b.txt", isDir: false).isIgnore)
   }
 
   // Not from upstream.
   @Test func nearestDirectoryWins() {
     let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "*.log"])
     let src = root.child("src", files: [".gitignore": "!keep.log"])
-    #expect(src.matched("src/keep.log", isDir: false).isWhitelist)
-    #expect(src.matched("src/other.log", isDir: false).isIgnore)
+    #expect(src.matched("keep.log", isDir: false).isWhitelist)
+    #expect(src.matched("other.log", isDir: false).isIgnore)
   }
 
   // Not from upstream.
@@ -79,7 +88,7 @@ struct IgnoreTests {
       files: [".sshadowignore": "!.env"]
     )
     let src = root.child("src", files: [".gitignore": ".env"])
-    #expect(src.matched("src/.env", isDir: false).isWhitelist)
+    #expect(src.matched(".env", isDir: false).isWhitelist)
   }
 
   @Test func walkNoIgnores() {
@@ -138,10 +147,10 @@ private func walk(_ tree: [String: String], filenames: [String], global: String 
   func visit(_ dir: String, _ ignore: Ignore) {
     let entries = dirs.map { ($0, true) } + files.keys.map { ($0, false) }
     for (path, isDir) in entries where !path.isEmpty && parentOf(path) == dir {
-      if ignore.matched(path, isDir: isDir).isIgnore { continue }
+      let name = String(path.split(separator: "/").last!)
+      if ignore.matched(name, isDir: isDir).isIgnore { continue }
       result.append(path)
       if isDir {
-        let name = String(path.split(separator: "/").last!)
         visit(path, ignore.child(name, files: ignoreFiles(in: path)))
       }
     }

@@ -26,7 +26,8 @@ public struct Ignore: Sendable {
     Ignore(parent: self, directory: directory.isEmpty ? name : "\(directory)/\(name)", files: files)
   }
 
-  public func matched(_ path: String, isDir: Bool) -> Match<Glob> {
+  public func matched(_ name: String, isDir: Bool) -> Match<Glob> {
+    let path = directory.isEmpty ? name : "\(directory)/\(name)"
     for i in filenames.indices.reversed() {
       for level in levels.reversed() {
         guard let rules = level[i] else { continue }
