@@ -5,7 +5,7 @@
 
 import Testing
 
-@testable import IgnoreModule
+@testable import Ignore
 
 struct GlobCase: CustomTestStringConvertible, Sendable {
   let name: String

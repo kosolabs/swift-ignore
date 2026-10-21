@@ -3,92 +3,95 @@
 
 import Testing
 
-@testable import IgnoreModule
+@testable import Ignore
 
-struct IgnoreTests {
+struct IgnoreStackTests {
   @Test func explicitIgnore() {
-    let ignore = Ignore(filenames: [], global: "foo\n!bar")
-    #expect(ignore.matched("foo", isDir: false).isIgnore)
-    #expect(ignore.matched("bar", isDir: false).isWhitelist)
-    #expect(ignore.matched("baz", isDir: false).isNone)
+    let ignore = IgnoreStack(filenames: [], global: "foo\n!bar")
+    #expect(ignore.matched("foo", isDirectory: false).isIgnored)
+    #expect(ignore.matched("bar", isDirectory: false).isIncluded)
+    #expect(ignore.matched("baz", isDirectory: false).isUnmatched)
   }
 
   @Test func customIgnore() {
-    let ignore = Ignore(filenames: [".customignore"], files: [".customignore": "foo\n!bar"])
-    #expect(ignore.matched("foo", isDir: false).isIgnore)
-    #expect(ignore.matched("bar", isDir: false).isWhitelist)
-    #expect(ignore.matched("baz", isDir: false).isNone)
+    let ignore = IgnoreStack(filenames: [".customignore"], files: [".customignore": "foo\n!bar"])
+    #expect(ignore.matched("foo", isDirectory: false).isIgnored)
+    #expect(ignore.matched("bar", isDirectory: false).isIncluded)
+    #expect(ignore.matched("baz", isDirectory: false).isUnmatched)
   }
 
   // Later filenames take precedence over earlier ones.
   @Test func customIgnorePrecedence() {
-    let ignore = Ignore(
+    let ignore = IgnoreStack(
       filenames: [".customignore1", ".customignore2"],
       files: [".customignore1": "foo", ".customignore2": "!foo"]
     )
-    #expect(ignore.matched("foo", isDir: false).isWhitelist)
+    #expect(ignore.matched("foo", isDirectory: false).isIncluded)
   }
 
   // Adapted from exclude_lowest: global rules take the place of
   // .git/info/exclude as the lowest precedence.
   @Test func globalLowest() {
-    let ignore = Ignore(
+    let ignore = IgnoreStack(
       filenames: [".gitignore", ".customignore"],
       global: "foo\nbar\nbaz",
       files: [".gitignore": "!foo", ".customignore": "!bar"]
     )
-    #expect(ignore.matched("baz", isDir: false).isIgnore)
-    #expect(ignore.matched("foo", isDir: false).isWhitelist)
-    #expect(ignore.matched("bar", isDir: false).isWhitelist)
+    #expect(ignore.matched("baz", isDirectory: false).isIgnored)
+    #expect(ignore.matched("foo", isDirectory: false).isIncluded)
+    #expect(ignore.matched("bar", isDirectory: false).isIncluded)
   }
 
   @Test func notPresent() {
-    let ignore = Ignore(filenames: [".gitignore"])
-    #expect(ignore.matched("foo", isDir: false).isNone)
+    let ignore = IgnoreStack(filenames: [".gitignore"])
+    #expect(ignore.matched("foo", isDirectory: false).isUnmatched)
   }
 
   // Adapted from stops_at_git_dir, without the .git barrier.
   @Test func parentRulesApplyInChild() {
-    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "bar"])
+    let root = IgnoreStack(filenames: [".gitignore"], files: [".gitignore": "bar"])
     let foo = root.child("foo", files: [:])
-    #expect(root.matched("bar", isDir: false).isIgnore)
-    #expect(foo.matched("bar", isDir: false).isIgnore)
+    #expect(root.matched("bar", isDirectory: false).isIgnored)
+    #expect(foo.matched("bar", isDirectory: false).isIgnored)
   }
 
   // Adapted from absolute_parent_anchored.
   @Test func anchoredToOwnDirectory() {
-    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/llvm/\nfoo"])
+    let root = IgnoreStack(filenames: [".gitignore"], files: [".gitignore": "/llvm/\nfoo"])
     let src = root.child("src", files: [:])
-    #expect(root.matched("llvm", isDir: true).isIgnore)
-    #expect(src.matched("llvm", isDir: true).isNone)
-    #expect(src.matched("foo", isDir: false).isIgnore)
+    #expect(root.matched("llvm", isDirectory: true).isIgnored)
+    #expect(src.matched("llvm", isDirectory: true).isUnmatched)
+    #expect(src.matched("foo", isDirectory: false).isIgnored)
   }
 
   // Not from upstream.
   @Test func namesAreRelativeToTheirDirectory() {
-    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "/a.txt\nsrc/lib/b.txt"])
+    let root = IgnoreStack(
+      filenames: [".gitignore"],
+      files: [".gitignore": "/a.txt\nsrc/lib/b.txt"]
+    )
     let lib = root.child("src", files: [:]).child("lib", files: [:])
-    #expect(root.matched("a.txt", isDir: false).isIgnore)
-    #expect(lib.matched("a.txt", isDir: false).isNone)
-    #expect(lib.matched("b.txt", isDir: false).isIgnore)
+    #expect(root.matched("a.txt", isDirectory: false).isIgnored)
+    #expect(lib.matched("a.txt", isDirectory: false).isUnmatched)
+    #expect(lib.matched("b.txt", isDirectory: false).isIgnored)
   }
 
   // Not from upstream.
   @Test func nearestDirectoryWins() {
-    let root = Ignore(filenames: [".gitignore"], files: [".gitignore": "*.log"])
+    let root = IgnoreStack(filenames: [".gitignore"], files: [".gitignore": "*.log"])
     let src = root.child("src", files: [".gitignore": "!keep.log"])
-    #expect(src.matched("keep.log", isDir: false).isWhitelist)
-    #expect(src.matched("other.log", isDir: false).isIgnore)
+    #expect(src.matched("keep.log", isDirectory: false).isIncluded)
+    #expect(src.matched("other.log", isDirectory: false).isIgnored)
   }
 
   // Not from upstream.
   @Test func laterFilenameBeatsNearerDirectory() {
-    let root = Ignore(
+    let root = IgnoreStack(
       filenames: [".gitignore", ".sshadowignore"],
       files: [".sshadowignore": "!.env"]
     )
     let src = root.child("src", files: [".gitignore": ".env"])
-    #expect(src.matched(".env", isDir: false).isWhitelist)
+    #expect(src.matched(".env", isDirectory: false).isIncluded)
   }
 
   @Test func walkNoIgnores() {
@@ -122,7 +125,7 @@ struct IgnoreTests {
 // Walks a fake tree the way SSHadow enumerates: one directory at a time, never
 // descending into ignored directories. Keys ending in "/" are directories;
 // other keys are files mapped to their contents.
-private func walk(_ tree: [String: String], filenames: [String], global: String = "") -> [String] {
+func walk(_ tree: [String: String], filenames: [String], global: String = "") -> [String] {
   var dirs: Set<String> = [""]
   var files: [String: String] = [:]
   for (key, contents) in tree {
@@ -144,21 +147,21 @@ private func walk(_ tree: [String: String], filenames: [String], global: String 
   }
 
   var result: [String] = []
-  func visit(_ dir: String, _ ignore: Ignore) {
+  func visit(_ dir: String, _ ignore: IgnoreStack) {
     let entries = dirs.map { ($0, true) } + files.keys.map { ($0, false) }
-    for (path, isDir) in entries where !path.isEmpty && parentOf(path) == dir {
+    for (path, isDirectory) in entries where !path.isEmpty && parentOf(path) == dir {
       let name = String(path.split(separator: "/").last!)
-      if ignore.matched(name, isDir: isDir).isIgnore { continue }
+      if ignore.matched(name, isDirectory: isDirectory).isIgnored { continue }
       result.append(path)
-      if isDir {
+      if isDirectory {
         visit(path, ignore.child(name, files: ignoreFiles(in: path)))
       }
     }
   }
-  visit("", Ignore(filenames: filenames, global: global, files: ignoreFiles(in: "")))
+  visit("", IgnoreStack(filenames: filenames, global: global, files: ignoreFiles(in: "")))
   return result.sorted()
 }
 
-private func parentOf(_ path: String) -> String {
+func parentOf(_ path: String) -> String {
   path.split(separator: "/").dropLast().joined(separator: "/")
 }
