@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/kosolabs/swift-ignore/compare/v0.1.0...v0.2.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* the module and product are now Ignore. Ignore is now the internal IgnoreStack, Glob is Rule, Match is no longer generic and its cases are unmatched/ignored/included, and isDir: is isDirectory:.
+
+### Features
+
+* add IgnoreTree and rename the API ([#12](https://github.com/kosolabs/swift-ignore/issues/12)) ([c9e3b73](https://github.com/kosolabs/swift-ignore/commit/c9e3b736b827aecc08cbf04651a6ee1a297cae6f))
+
 ## 0.1.0 (2026-10-19)
 
 
