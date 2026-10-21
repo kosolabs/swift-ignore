@@ -2,7 +2,7 @@
 
 import Testing
 
-@testable import IgnoreModule
+@testable import Ignore
 
 private let root = "/home/foobar/rust/rg"
 
@@ -11,14 +11,20 @@ struct MatchCase: CustomTestStringConvertible, Sendable {
   let root: String
   let gitignore: String
   let path: String
-  let isDir: Bool
+  let isDirectory: Bool
 
-  init(_ name: String, _ root: String, _ gitignore: String, _ path: String, _ isDir: Bool = false) {
+  init(
+    _ name: String,
+    _ root: String,
+    _ gitignore: String,
+    _ path: String,
+    _ isDirectory: Bool = false
+  ) {
     self.name = name
     self.root = root
     self.gitignore = gitignore
     self.path = path
-    self.isDir = isDir
+    self.isDirectory = isDirectory
   }
 
   var testDescription: String { name }
@@ -104,7 +110,7 @@ private let notIgnoredCases: [MatchCase] = [
 
 private func rulesFromStr(_ root: String, _ s: String) -> IgnoreRules {
   var builder = IgnoreRulesBuilder(root: root)
-  builder.addStr(from: nil, s)
+  builder.addStr(file: nil, s)
   return builder.build()
 }
 
@@ -112,13 +118,13 @@ struct IgnoreRulesTests {
   @Test(arguments: ignoredCases)
   func ignored(_ c: MatchCase) {
     let rules = rulesFromStr(c.root, c.gitignore)
-    #expect(rules.matched(c.path, isDir: c.isDir).isIgnore)
+    #expect(rules.matched(c.path, isDirectory: c.isDirectory).isIgnored)
   }
 
   @Test(arguments: notIgnoredCases)
   func notIgnored(_ c: MatchCase) {
     let rules = rulesFromStr(c.root, c.gitignore)
-    #expect(!rules.matched(c.path, isDir: c.isDir).isIgnore)
+    #expect(!rules.matched(c.path, isDirectory: c.isDirectory).isIgnored)
   }
 
   // See: https://github.com/BurntSushi/ripgrep/issues/106
@@ -129,43 +135,43 @@ struct IgnoreRulesTests {
   @Test func caseInsensitive() {
     var builder = IgnoreRulesBuilder(root: root)
     builder.caseInsensitive = true
-    builder.addStr(from: nil, "*.html")
+    builder.addStr(file: nil, "*.html")
     let rules = builder.build()
-    #expect(rules.matched("foo.html", isDir: false).isIgnore)
-    #expect(rules.matched("foo.HTML", isDir: false).isIgnore)
-    #expect(!rules.matched("foo.htm", isDir: false).isIgnore)
-    #expect(!rules.matched("foo.HTM", isDir: false).isIgnore)
+    #expect(rules.matched("foo.html", isDirectory: false).isIgnored)
+    #expect(rules.matched("foo.HTML", isDirectory: false).isIgnored)
+    #expect(!rules.matched("foo.htm", isDirectory: false).isIgnored)
+    #expect(!rules.matched("foo.HTM", isDirectory: false).isIgnored)
   }
 
   // Not from upstream: braces are literal, as in git.
   @Test func bracesAreLiteral() {
     let rules = rulesFromStr(root, "{a,b}")
-    #expect(rules.matched("{a,b}", isDir: false).isIgnore)
-    #expect(!rules.matched("a", isDir: false).isIgnore)
+    #expect(rules.matched("{a,b}", isDirectory: false).isIgnored)
+    #expect(!rules.matched("a", isDirectory: false).isIgnored)
   }
 
   // Not from upstream.
   @Test func byteOrderMarkIsSkipped() {
     let rules = rulesFromStr(root, "\u{FEFF}foo")
-    #expect(rules.matched("foo", isDir: false).isIgnore)
+    #expect(rules.matched("foo", isDirectory: false).isIgnored)
   }
 
   // Not from upstream. Git only trims trailing spaces.
   @Test func trailingTabIsTrimmed() {
     let rules = rulesFromStr(root, "foo\t")
-    #expect(rules.matched("foo", isDir: false).isIgnore)
+    #expect(rules.matched("foo", isDirectory: false).isIgnored)
   }
 
   // Not from upstream. Ripgrep treats `foo\/` as `foo/`; git never matches it.
   @Test func escapedTrailingSlashNeverMatches() {
     let rules = rulesFromStr(root, "foo\\/")
-    #expect(!rules.matched("foo", isDir: true).isIgnore)
+    #expect(!rules.matched("foo", isDirectory: true).isIgnored)
   }
 
   // Not from upstream. Ripgrep strips the root as a string prefix.
   @Test func rootIsStrippedByComponent() {
     let rules = rulesFromStr("src", "/x/foo")
-    #expect(rules.matched("src/x/foo", isDir: false).isIgnore)
-    #expect(!rules.matched("srcx/foo", isDir: false).isIgnore)
+    #expect(rules.matched("src/x/foo", isDirectory: false).isIgnored)
+    #expect(!rules.matched("srcx/foo", isDirectory: false).isIgnored)
   }
 }

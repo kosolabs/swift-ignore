@@ -2,35 +2,36 @@
 
 Gitignore-style ignore rules for Swift, built for [SSHadow](https://github.com/kosolabs/sshadow).
 
-`IgnoreModule` matches paths against rules written in `.gitignore` syntax and combines ignore files across a directory tree. It reads no files itself: you pass in the contents of the ignore files you find.
+The `Ignore` module matches paths against rules written in `.gitignore` syntax, combining ignore files across a directory tree. It reads no files itself: you pass in the contents of the ignore files you find, as you find them.
 
 ## ⚠️ Pre-1.0
 
 This package is functional, but **breaking changes may occur between minor releases until version 1.0.** Pin to a minor version:
 
 ```swift
-.package(url: "https://github.com/kosolabs/swift-ignore.git", .upToNextMinor(from: "0.1.0"))
+.package(url: "https://github.com/kosolabs/swift-ignore.git", .upToNextMinor(from: "0.2.0"))
 ```
 
 ## Example
 
 ```swift
-import IgnoreModule
+import Ignore
 
-let root = Ignore(
-  filenames: [".gitignore", ".sshadowignore"],
-  global: ".DS_Store",
-  files: [".gitignore": "build/\n*.log"]
-)
-root.matched("build", isDir: true).isIgnore        // true
-root.matched("notes.txt", isDir: false).isIgnore   // false
+var tree = IgnoreTree(filenames: [".gitignore", ".sshadowignore"], global: ".DS_Store")
+tree.set([".gitignore": "build/\n*.log"], in: "")
+tree.matched("build/out/a.o", isDirectory: false)?.isIgnored   // true: build/ is ignored
+tree.matched("notes.txt", isDirectory: false)?.isUnmatched     // true
+tree.matched("src/debug.log", isDirectory: false)              // nil: src isn't known yet
 
-let src = root.child("src", files: [".sshadowignore": "!debug.log"])
-src.matched("debug.log", isDir: false).isWhitelist  // true: later filenames win
-src.matched("error.log", isDir: false).isIgnore     // true
+tree.set([".sshadowignore": "!debug.log"], in: "src")          // true: the rules changed
+tree.matched("src/debug.log", isDirectory: false)?.isIncluded  // true: later filenames win
+
+if case .ignored(let rule)? = tree.matched("src/error.log", isDirectory: false) {
+  print(rule.file ?? "global", rule.original)                   // .gitignore *.log
+}
 ```
 
-`matched` takes the name of an entry in that `Ignore`'s directory. Don't descend into ignored directories: as in git, a file inside an excluded directory can't be re-included.
+`set` records the ignore files in a directory and returns whether they changed, and `remove` drops one. `matched` takes a path from the root. As in git, a path inside an ignored directory is ignored by that directory's rule and can't be re-included. `matched` returns nil until every directory on the way has been `set`, because their rules could change the answer.
 
 ## Attribution
 

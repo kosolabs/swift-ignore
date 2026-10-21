@@ -30,17 +30,17 @@ Matching semantics:
 
 API:
 
-- The module is `IgnoreModule`, so the `Ignore` type doesn't shadow it.
-- The public API is `Ignore`, `Match` and `Glob`.
+- The module is `Ignore`. The public API is `IgnoreTree`, `Match` and `Rule`.
+- `IgnoreTree` holds the ignore files of each known directory, and callers look up paths one at a time. `set(_:in:)` records a directory's files and returns whether they changed, `remove(_:in:)` drops one, and `files(in:)` reads them back. `matched(_:isDirectory:)` takes a `/`-separated path from the root and returns the match for the first ignored parent directory, if there is one. It returns nil when a directory on the way hasn't been `set`, because unknown rules could change the answer.
+- `Match` (`.unmatched`, `.ignored`, `.included`) and `Rule` report which rule matched. `Rule` holds the rule's `file` (nil for `global`), its `original` line, the `pattern` it compiles to, `isNegated` and `isDirectoryOnly`.
+- Names follow `man gitignore` and Swift's API guidelines, not ripgrep: a `!` rule is negated, a path it matches is included, and nothing is abbreviated.
 - `IgnoreRules`, built with `IgnoreRulesBuilder`, holds the rules from one ignore file. It's ripgrep's `Gitignore`, and it's internal.
-- `Ignore` combines ignore files across a directory tree. It's ripgrep's `dir::Ignore`. `Ignore(filenames:global:files:)` is the root, and `child(_:files:)` descends one directory.
-- `Match<T>` (`.none`, `.ignore`, `.whitelist`) and `Glob` report which rule matched.
-- `Ignore.matched(_:isDir:)` takes the name of an entry in that `Ignore`'s directory. Internally, paths are `/`-separated `String`s, relative to the root of the `Ignore` stack.
+- `IgnoreStack` combines ignore files down one branch of the tree, for a walk from the root. It's ripgrep's `dir::Ignore`, and it's internal: `IgnoreTree` uses its precedence, and the walk tests use it. Make it public again only when a caller needs to walk.
 - Precedence:
   - Later entries in `filenames` beat earlier ones.
   - Within one filename, the nearest directory wins.
   - `global` rules come last.
-- Callers never descend into an ignored directory, so a file inside an excluded directory can't be re-included.
+- A file inside an excluded directory can't be re-included. `IgnoreTree` checks parent directories, and walkers never descend into an ignored one.
 
 Internals can change freely. Ask before changing the public API.
 
